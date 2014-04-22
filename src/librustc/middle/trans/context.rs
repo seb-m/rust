@@ -51,7 +51,7 @@ pub struct Stats {
     pub fn_stats: RefCell<Vec<(String, uint, uint)> >,
 }
 
-pub struct CrateContext {
+pub struct CrateContext<'tcx> {
     pub llmod: ModuleRef,
     pub llcx: ContextRef,
     pub metadata_llmod: ModuleRef,
@@ -112,7 +112,7 @@ pub struct CrateContext {
     pub symbol_hasher: RefCell<Sha256>,
     pub type_hashcodes: RefCell<HashMap<ty::t, String>>,
     pub all_llvm_symbols: RefCell<HashSet<String>>,
-    pub tcx: ty::ctxt,
+    pub tcx: ty::ctxt<'tcx>,
     pub stats: Stats,
     pub int_type: Type,
     pub opaque_vec_type: Type,
@@ -128,14 +128,14 @@ pub struct CrateContext {
     intrinsics: RefCell<HashMap<&'static str, ValueRef>>,
 }
 
-impl CrateContext {
+impl<'tcx> CrateContext<'tcx> {
     pub fn new(name: &str,
-               tcx: ty::ctxt,
+               tcx: ty::ctxt<'tcx>,
                emap2: resolve::ExportMap2,
                symbol_hasher: Sha256,
                link_meta: LinkMeta,
                reachable: NodeSet)
-               -> CrateContext {
+               -> CrateContext<'tcx> {
         unsafe {
             let llcx = llvm::LLVMContextCreate();
             let llmod = name.with_c_str(|buf| {
@@ -256,7 +256,7 @@ impl CrateContext {
         &self.tcx.sess
     }
 
-    pub fn builder<'a>(&'a self) -> Builder<'a> {
+    pub fn builder<'a>(&'a self) -> Builder<'a, 'tcx> {
         Builder::new(self)
     }
 

@@ -135,15 +135,16 @@ pub fn push_ctxt(s: &'static str) -> _InsnCtxt {
     _InsnCtxt { _cannot_construct_outside_of_this_module: () }
 }
 
-pub struct StatRecorder<'a> {
-    ccx: &'a CrateContext,
+pub struct StatRecorder<'a, 'tcx: 'a> {
+    ccx: &'a CrateContext<'tcx>,
     name: Option<String>,
     start: u64,
     istart: uint,
 }
 
-impl<'a> StatRecorder<'a> {
-    pub fn new(ccx: &'a CrateContext, name: String) -> StatRecorder<'a> {
+impl<'a, 'tcx> StatRecorder<'a, 'tcx> {
+    pub fn new(ccx: &'a CrateContext<'tcx>, name: String)
+               -> StatRecorder<'a, 'tcx> {
         let start = if ccx.sess().trans_stats() {
             time::precise_time_ns()
         } else {
@@ -160,7 +161,7 @@ impl<'a> StatRecorder<'a> {
 }
 
 #[unsafe_destructor]
-impl<'a> Drop for StatRecorder<'a> {
+impl<'a, 'tcx> Drop for StatRecorder<'a, 'tcx> {
     fn drop(&mut self) {
         if self.ccx.sess().trans_stats() {
             let end = time::precise_time_ns();
@@ -2113,11 +2114,11 @@ fn enum_variant_size_lint(ccx: &CrateContext, enum_def: &ast::EnumDef, sp: Span,
     }
 }
 
-pub struct TransItemVisitor<'a> {
-    pub ccx: &'a CrateContext,
+pub struct TransItemVisitor<'a, 'tcx: 'a> {
+    pub ccx: &'a CrateContext<'tcx>,
 }
 
-impl<'a> Visitor<()> for TransItemVisitor<'a> {
+impl<'a, 'tcx> Visitor<()> for TransItemVisitor<'a, 'tcx> {
     fn visit_item(&mut self, i: &ast::Item, _:()) {
         trans_item(self.ccx, i);
     }
@@ -2814,19 +2815,20 @@ pub fn p2i(ccx: &CrateContext, v: ValueRef) -> ValueRef {
     }
 }
 
-pub fn crate_ctxt_to_encode_parms<'r>(cx: &'r CrateContext, ie: encoder::EncodeInlinedItem<'r>)
-    -> encoder::EncodeParams<'r> {
-        encoder::EncodeParams {
-            diag: cx.sess().diagnostic(),
-            tcx: cx.tcx(),
-            reexports2: &cx.exp_map2,
-            item_symbols: &cx.item_symbols,
-            non_inlineable_statics: &cx.non_inlineable_statics,
-            link_meta: &cx.link_meta,
-            cstore: &cx.sess().cstore,
-            encode_inlined_item: ie,
-            reachable: &cx.reachable,
-        }
+pub fn crate_ctxt_to_encode_parms<'a, 'tcx>(cx: &'a CrateContext<'tcx>,
+                                            ie: encoder::EncodeInlinedItem<'a>)
+                                            -> encoder::EncodeParams<'a, 'tcx> {
+    encoder::EncodeParams {
+        diag: cx.sess().diagnostic(),
+        tcx: cx.tcx(),
+        reexports2: &cx.exp_map2,
+        item_symbols: &cx.item_symbols,
+        non_inlineable_statics: &cx.non_inlineable_statics,
+        link_meta: &cx.link_meta,
+        cstore: &cx.sess().cstore,
+        encode_inlined_item: ie,
+        reachable: &cx.reachable,
+    }
 }
 
 pub fn write_metadata(cx: &CrateContext, krate: &ast::Crate) -> Vec<u8> {

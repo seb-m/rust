@@ -489,11 +489,11 @@ impl LintPass for HeapMemory {
 declare_lint!(RAW_POINTER_DERIVING, Warn,
               "uses of #[deriving] with raw pointers are rarely correct")
 
-struct RawPtrDerivingVisitor<'a> {
-    cx: &'a Context<'a>
+struct RawPtrDerivingVisitor<'a, 'tcx: 'a> {
+    cx: &'a Context<'a, 'tcx>
 }
 
-impl<'a> visit::Visitor<()> for RawPtrDerivingVisitor<'a> {
+impl<'a, 'tcx> visit::Visitor<()> for RawPtrDerivingVisitor<'a, 'tcx> {
     fn visit_ty(&mut self, ty: &ast::Ty, _: ()) {
         static MSG: &'static str = "use of `#[deriving]` with a raw pointer";
         match ty.node {
