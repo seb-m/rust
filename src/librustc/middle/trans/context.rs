@@ -248,7 +248,7 @@ impl<'tcx> CrateContext<'tcx> {
         }
     }
 
-    pub fn tcx<'a>(&'a self) -> &'a ty::ctxt {
+    pub fn tcx<'a>(&'a self) -> &'a ty::ctxt<'tcx> {
         &self.tcx
     }
 
