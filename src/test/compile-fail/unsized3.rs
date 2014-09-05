@@ -55,20 +55,18 @@ fn f9<Sized? X>(x1: Box<S<X>>, x2: Box<E<X>>) {
     f5(&(32i, *x2)); //~ERROR instantiating a type parameter with an incompatible type `(int,E<X>)`,
 }
 
-// I would like these to fail eventually.
-/*
 // impl - bounded
 trait T1<Z: T> {
 }
 struct S3<Sized? Y>;
-impl<Sized? X: T> T1<X> for S3<X> { //ERROR instantiating a type parameter with an incompatible type
+impl<Sized? X: T> T1<X> for S3<X> { //~ ERROR instantiating a type parameter with an incompatible
 }
 
 // impl - unbounded
 trait T2<Z> {
 }
-impl<Sized? X> T2<X> for S3<X> { //ERROR instantiating a type parameter with an incompatible type `X
-*/
+impl<Sized? X> T2<X> for S3<X> { //~ ERROR instantiating a type parameter with an incompatible type
+}
 
 // impl - struct
 trait T3<Sized? Z> {
